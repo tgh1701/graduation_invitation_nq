@@ -884,11 +884,23 @@ async function startCamera() {
         cameraStream = stream;
 
         const video = document.getElementById('cameraVideo');
-        video.srcObject = cameraStream;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('autoplay', '');
+        video.playsInline = true;
+        video.defaultMuted = true;
         video.muted = true;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
         video.style.display = 'block';
+
+        // Ngăn chặn Safari iOS tự ý mở trình phát toàn màn hình (QuickTime Player)
+        video.addEventListener('webkitbeginfullscreen', (e) => {
+            e.preventDefault();
+            if (video.webkitExitFullscreen) {
+                video.webkitExitFullscreen();
+            }
+        });
+
+        video.srcObject = cameraStream;
 
         const capturedImg = document.getElementById('capturedPhoto');
         if (capturedImg) capturedImg.style.display = 'none';

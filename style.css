@@ -1871,6 +1871,8 @@ main:not(.main-hidden) {
     height: 100%;
     object-fit: cover;
     transform: scaleX(-1); /* Mirror */
+    -webkit-transform: scaleX(-1);
+    pointer-events: none; /* Ngăn Safari iOS mở trình phát toàn màn hình khi chạm vào video */
 }
 
 .captured-photo {
