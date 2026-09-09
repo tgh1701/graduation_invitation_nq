@@ -496,12 +496,12 @@ function renderWishCards(wishes) {
         const attendClass = wish.attendance === 'yes' ? 'attending' : 'not-attending';
         const attendText = wish.attendance === 'yes' ? '✅ Sẽ tham dự' : '❌ Không thể tham dự';
 
-        // Photo section (if exists)
-        const isTruncated = wish.photo && (wish.photo.length === 49000 || wish.photo.length < 100);
-        const hasValidPhoto = wish.photo && typeof wish.photo === 'string' && wish.photo.startsWith('data:image/') && !isTruncated;
+        // Photo section (if exists, automatically repair truncated base64 if needed)
+        const photoSrc = repairPhotoDataUrl(wish.photo);
+        const hasValidPhoto = photoSrc && typeof photoSrc === 'string' && photoSrc.startsWith('data:image/');
         const photoHtml = hasValidPhoto
             ? `<div class="wish-photo" onclick="openLightbox(this.querySelector('img').src)">
-                    <img src="${wish.photo}" alt="Photo Booth" 
+                    <img src="${photoSrc}" alt="Photo Booth" 
                          onload="if(this.naturalWidth === 0 || this.naturalHeight === 0) { this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none'; }"
                          onerror="this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none';" />
                </div>`
@@ -1257,9 +1257,26 @@ function selectSticker(type) {
     }
 }
 
-// ============================================
-// PHOTO COMPRESSION & UTILS
-// ============================================
+function repairPhotoDataUrl(dataUrl) {
+    if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) {
+        return null;
+    }
+
+    // Nếu ảnh bị Google Sheets cắt cụt ở 49.000 ký tự:
+    // Căn chỉnh lại độ dài base64 chia hết cho 4 và bổ sung marker kết thúc JPEG (/9k=) để trình duyệt vẽ hình ảnh nguyên vẹn
+    if (dataUrl.length === 49000) {
+        const commaIdx = dataUrl.indexOf(',');
+        if (commaIdx !== -1) {
+            const prefix = dataUrl.substring(0, commaIdx + 1);
+            let body = dataUrl.substring(commaIdx + 1);
+            const validLen = Math.floor(body.length / 4) * 4;
+            body = body.substring(0, validLen);
+            return prefix + body + '/9k=';
+        }
+    }
+
+    return dataUrl;
+}
 
 function compressPhoto(sourceCanvas, initialWidth = 280) {
     let width = Math.min(initialWidth, sourceCanvas.width);
