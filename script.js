@@ -497,10 +497,13 @@ function renderWishCards(wishes) {
         const attendText = wish.attendance === 'yes' ? '✅ Sẽ tham dự' : '❌ Không thể tham dự';
 
         // Photo section (if exists)
-        const hasValidPhoto = wish.photo && typeof wish.photo === 'string' && wish.photo.startsWith('data:image/');
+        const isTruncated = wish.photo && (wish.photo.length === 49000 || wish.photo.length < 100);
+        const hasValidPhoto = wish.photo && typeof wish.photo === 'string' && wish.photo.startsWith('data:image/') && !isTruncated;
         const photoHtml = hasValidPhoto
             ? `<div class="wish-photo" onclick="openLightbox(this.querySelector('img').src)">
-                    <img src="${wish.photo}" alt="Photo Booth" onerror="this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none';" />
+                    <img src="${wish.photo}" alt="Photo Booth" 
+                         onload="if(this.naturalWidth === 0 || this.naturalHeight === 0) { this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none'; }"
+                         onerror="this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none';" />
                </div>`
             : '';
 
