@@ -434,7 +434,12 @@ function removeAttachedPhoto() {
 // WISHES BOARD
 // ============================================
 async function loadWishes() {
-    let wishes = JSON.parse(localStorage.getItem('graduation_wishes') || '[]');
+    let wishes = [];
+    try {
+        wishes = JSON.parse(localStorage.getItem('graduation_wishes') || '[]');
+    } catch (err) {
+        wishes = [];
+    }
 
     // Render immediately from local cache
     renderWishCards(wishes);
@@ -447,7 +452,11 @@ async function loadWishes() {
                 const cloudWishes = await res.json();
                 if (Array.isArray(cloudWishes) && cloudWishes.length > 0) {
                     wishes = cloudWishes;
-                    localStorage.setItem('graduation_wishes', JSON.stringify(wishes));
+                    try {
+                        localStorage.setItem('graduation_wishes', JSON.stringify(wishes));
+                    } catch (storageErr) {
+                        console.warn('LocalStorage quota or restricted:', storageErr);
+                    }
                     renderWishCards(wishes);
                 }
             }
@@ -1002,78 +1011,103 @@ function handlePhotoUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-            // Tắt camera stream nếu đang chạy
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
+    // Tắt camera stream nếu đang chạy
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
 
-            const canvas = document.getElementById('photoCanvas');
-            const ctx = canvas.getContext('2d');
+    // Dùng URL.createObjectURL để load ảnh nhẹ nhàng, không gây tràn RAM trên điện thoại
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = function () {
+        URL.revokeObjectURL(objectUrl);
 
-            canvas.width = 640;
-            canvas.height = 480;
+        const canvas = document.getElementById('photoCanvas');
+        const ctx = canvas.getContext('2d');
+        const cameraWrapper = document.getElementById('cameraWrapper');
 
-            // Scale và center ảnh tải lên
-            rawCapturedCanvas = document.createElement('canvas');
-            rawCapturedCanvas.width = canvas.width;
-            rawCapturedCanvas.height = canvas.height;
-            const rawCtx = rawCapturedCanvas.getContext('2d');
+        // Tự động nhận diện hướng ảnh: dọc (điện thoại) hay ngang (máy tính)
+        let targetW = 640;
+        let targetH = 480;
+        if (img.height > img.width * 1.15) {
+            // Ảnh chụp dọc điện thoại: giữ tỷ lệ dọc 480x640 để không bị cắt xén đầu hoặc cằm
+            targetW = 480;
+            targetH = 640;
+            if (cameraWrapper) cameraWrapper.style.aspectRatio = '3/4';
+        } else if (Math.abs(img.width - img.height) < 60) {
+            // Ảnh vuông
+            targetW = 500;
+            targetH = 500;
+            if (cameraWrapper) cameraWrapper.style.aspectRatio = '1/1';
+        } else {
+            // Ảnh ngang máy tính
+            targetW = 640;
+            targetH = 480;
+            if (cameraWrapper) cameraWrapper.style.aspectRatio = '4/3';
+        }
 
-            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-            const x = (canvas.width - img.width * scale) / 2;
-            const y = (canvas.height - img.height * scale) / 2;
-            rawCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        canvas.width = targetW;
+        canvas.height = targetH;
 
-            // Vẽ lên canvas chính
-            ctx.drawImage(rawCapturedCanvas, 0, 0);
+        // Scale và center ảnh tải lên vừa khít khung (chế độ cover)
+        rawCapturedCanvas = document.createElement('canvas');
+        rawCapturedCanvas.width = canvas.width;
+        rawCapturedCanvas.height = canvas.height;
+        const rawCtx = rawCapturedCanvas.getContext('2d');
 
-            // Lồng khung tốt nghiệp
-            drawFrameOnCanvas(ctx, canvas.width, canvas.height);
+        const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        const x = (canvas.width - img.width * scale) / 2;
+        const y = (canvas.height - img.height * scale) / 2;
+        rawCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
 
-            // Hiển thị ảnh
-            const capturedImg = document.getElementById('capturedPhoto');
-            const photoDataUrl = canvas.toDataURL('image/png');
-            capturedImg.src = photoDataUrl;
-            capturedImg.style.display = 'block';
+        // Vẽ lên canvas chính
+        ctx.drawImage(rawCapturedCanvas, 0, 0);
 
-            const video = document.getElementById('cameraVideo');
-            if (video) video.style.display = 'none';
+        // Lồng khung tốt nghiệp
+        drawFrameOnCanvas(ctx, canvas.width, canvas.height);
 
-            const placeholder = document.getElementById('cameraPlaceholder');
-            if (placeholder) placeholder.style.display = 'none';
+        // Hiển thị ảnh
+        const capturedImg = document.getElementById('capturedPhoto');
+        const photoDataUrl = canvas.toDataURL('image/png');
+        capturedImg.src = photoDataUrl;
+        capturedImg.style.display = 'block';
 
-            // Đổi các nút bấm
-            document.getElementById('startCameraBtn').style.display = 'none';
-            const uploadBtn = document.getElementById('uploadPhotoBtn');
-            if (uploadBtn) uploadBtn.style.display = 'none';
-            document.getElementById('captureBtn').style.display = 'none';
-            document.getElementById('retakeBtn').style.display = 'inline-flex';
-            document.getElementById('downloadBtn').style.display = 'inline-flex';
-            document.getElementById('stickerSelector').style.display = 'block';
+        const video = document.getElementById('cameraVideo');
+        if (video) video.style.display = 'none';
 
-            // Tự động đính kèm vào form xác nhận
-            hasAttachedPhoto = true;
-            const attachedThumb = document.getElementById('attachedThumbImg');
-            const emptyHint = document.getElementById('photoStatusEmpty');
-            const attachedBox = document.getElementById('photoStatusAttached');
-            const submitBtnText = document.getElementById('submitBtnText');
+        const placeholder = document.getElementById('cameraPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
 
-            if (attachedThumb) attachedThumb.src = photoDataUrl;
-            if (emptyHint) emptyHint.style.display = 'none';
-            if (attachedBox) attachedBox.style.display = 'flex';
-            if (submitBtnText) submitBtnText.textContent = '🎉 Gửi Xác Nhận, Lời Chúc & Ảnh';
+        // Đổi các nút bấm
+        document.getElementById('startCameraBtn').style.display = 'none';
+        const uploadBtn = document.getElementById('uploadPhotoBtn');
+        if (uploadBtn) uploadBtn.style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('retakeBtn').style.display = 'inline-flex';
+        document.getElementById('downloadBtn').style.display = 'inline-flex';
+        document.getElementById('stickerSelector').style.display = 'block';
 
-            launchConfetti();
-            showToast('📸', 'Đã tải ảnh và lồng khung thành công!');
-        };
-        img.src = e.target.result;
+        // Tự động đính kèm vào form xác nhận
+        hasAttachedPhoto = true;
+        const attachedThumb = document.getElementById('attachedThumbImg');
+        const emptyHint = document.getElementById('photoStatusEmpty');
+        const attachedBox = document.getElementById('photoStatusAttached');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (attachedThumb) attachedThumb.src = photoDataUrl;
+        if (emptyHint) emptyHint.style.display = 'none';
+        if (attachedBox) attachedBox.style.display = 'flex';
+        if (submitBtnText) submitBtnText.textContent = '🎉 Gửi Xác Nhận, Lời Chúc & Ảnh';
+
+        launchConfetti();
+        showToast('📸', 'Đã tải ảnh và lồng khung thành công!');
     };
-    reader.readAsDataURL(file);
+    img.onerror = function () {
+        URL.revokeObjectURL(objectUrl);
+        showToast('⚠️', 'Không thể đọc file ảnh này. Vui lòng chọn ảnh định dạng JPG hoặc PNG!');
+    };
+    img.src = objectUrl;
 }
 
 function drawFrameOnCanvas(ctx, width, height) {
@@ -1173,6 +1207,8 @@ function retakePhoto() {
     const video = document.getElementById('cameraVideo');
     const capturedImg = document.getElementById('capturedPhoto');
     const placeholder = document.getElementById('cameraPlaceholder');
+    const cameraWrapper = document.getElementById('cameraWrapper');
+    if (cameraWrapper) cameraWrapper.style.aspectRatio = '';
 
     capturedImg.style.display = 'none';
     rawCapturedCanvas = null;
@@ -1262,17 +1298,18 @@ function repairPhotoDataUrl(dataUrl) {
         return null;
     }
 
-    // Nếu ảnh bị Google Sheets cắt cụt ở 49.000 ký tự:
+    const commaIdx = dataUrl.indexOf(',');
+    if (commaIdx === -1) return dataUrl;
+
+    const prefix = dataUrl.substring(0, commaIdx + 1);
+    let body = dataUrl.substring(commaIdx + 1);
+
+    // Nếu ảnh JPEG bị Google Sheets cắt cụt (độ dài >= 48.000 ký tự hoặc base64 không chia hết cho 4):
     // Căn chỉnh lại độ dài base64 chia hết cho 4 và bổ sung marker kết thúc JPEG (/9k=) để trình duyệt vẽ hình ảnh nguyên vẹn
-    if (dataUrl.length === 49000) {
-        const commaIdx = dataUrl.indexOf(',');
-        if (commaIdx !== -1) {
-            const prefix = dataUrl.substring(0, commaIdx + 1);
-            let body = dataUrl.substring(commaIdx + 1);
-            const validLen = Math.floor(body.length / 4) * 4;
-            body = body.substring(0, validLen);
-            return prefix + body + '/9k=';
-        }
+    if (dataUrl.length >= 48000 || body.length % 4 !== 0) {
+        const validLen = Math.floor(body.length / 4) * 4;
+        body = body.substring(0, validLen);
+        return prefix + body + '/9k=';
     }
 
     return dataUrl;
@@ -1280,6 +1317,10 @@ function repairPhotoDataUrl(dataUrl) {
 
 function compressPhoto(sourceCanvas, initialWidth = 280) {
     let width = Math.min(initialWidth, sourceCanvas.width);
+    // Nếu ảnh chụp dọc (điện thoại), chiều rộng ban đầu 240 là rất sắc nét và nhẹ
+    if (sourceCanvas.height > sourceCanvas.width) {
+        width = Math.min(240, width);
+    }
     let quality = 0.55;
     let dataUrl = '';
 
