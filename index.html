@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Thiệp Mời Lễ Tốt Nghiệp Thạc Sĩ - Vũ Thị Ngọc Quỳnh</title>
+    <meta name="description" content="Trân trọng kính mời Quý khách đến tham dự Lễ Tốt Nghiệp và Trao Bằng Thạc Sĩ của Vũ Thị Ngọc Quỳnh - Đại học Hàng Hải Việt Nam">
+    <meta property="og:title" content="🎓 Thiệp Mời Lễ Tốt Nghiệp Thạc Sĩ - Vũ Thị Ngọc Quỳnh">
+    <meta property="og:description" content="Trân trọng kính mời Quý khách đến tham dự Lễ Tốt Nghiệp Thạc Sĩ - ĐH Hàng Hải">
+    <meta property="og:image" content="quynh.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ========== ENVELOPE OPENING SCREEN ========== -->
+    <div class="envelope-screen" id="envelopeScreen">
+        <div class="envelope-particles" id="envelopeParticles"></div>
+        <div class="envelope-container" id="envelopeContainer" onclick="openEnvelope()">
+            <div class="envelope">
+                <div class="envelope-back"></div>
+                <div class="envelope-card">
+                    <div class="mini-card">
+                        <div class="mini-avatar-wrap">
+                            <img src="quynh.jpg" alt="Vũ Thị Ngọc Quỳnh" class="mini-card-avatar">
+                        </div>
+                        <span class="mini-text">Thiệp Mời</span>
+                        <span class="mini-name">Vũ Thị Ngọc Quỳnh</span>
+                    </div>
+                </div>
+                <div class="envelope-front"></div>
+                <div class="envelope-flap"></div>
+            </div>
+            <div class="wax-seal">
+                <span>🎓</span>
+            </div>
+            <p class="tap-hint">
+                <span class="tap-icon">💌</span>
+                Nhấn để mở thiệp mời
+            </p>
+            <p class="envelope-creator">✨ Made by Hien Truong ✨</p>
+        </div>
+    </div>
+
+    <!-- ========== CONFETTI CANVAS ========== -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- ========== FLOATING CAPS ========== -->
+    <div class="floating-caps" id="floatingCaps"></div>
+
+    <!-- ========== MUSIC TOGGLE ========== -->
+    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()" title="Bật/Tắt nhạc">
+        <span class="music-icon" id="musicIcon">🔇</span>
+    </button>
+
+    <!-- ========== SCROLL TO TOP ========== -->
+    <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()" title="Lên đầu trang">↑</button>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main id="mainContent" class="main-hidden">
+
+        <!-- ===== HERO SECTION ===== -->
+        <section class="hero" id="hero">
+            <div class="hero-ornament top-left"></div>
+            <div class="hero-ornament top-right"></div>
+            <div class="hero-ornament bottom-left"></div>
+            <div class="hero-ornament bottom-right"></div>
+
+            <div class="hero-content reveal">
+                <div class="invitation-badge">✦ THIỆP MỜI ✦</div>
+                <p class="hero-subtitle">Trân trọng kính mời Quý khách đến tham dự</p>
+                <h1 class="hero-title">Lễ Tốt Nghiệp<br><span class="highlight">Thạc Sĩ</span></h1>
+                <div class="divider">
+                    <span class="divider-ornament">❖</span>
+                </div>
+
+                <!-- GRADUATE PORTRAIT -->
+                <div class="graduate-portrait-wrapper">
+                    <div class="graduate-portrait-glow"></div>
+                    <div class="graduate-portrait-ring" onclick="openLightbox('quynh.jpg')" title="Nhấn để xem ảnh">
+                        <div class="graduate-portrait-inner">
+                            <img src="quynh.jpg" alt="Vũ Thị Ngọc Quỳnh - Thạc sĩ Quản lí Kinh tế" class="graduate-photo">
+                            <div class="photo-overlay-hint">
+                                <span class="hint-icon">🔍</span>
+                                <span>Xem ảnh</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="graduate-badge-gold">
+                        <span>🎓 Thạc sĩ QLKT</span>
+                    </div>
+                </div>
+
+                <p class="graduate-name">Vũ Thị Ngọc Quỳnh</p>
+                <p class="graduate-field">Ngành Quản lí Kinh tế</p>
+                <div class="university-badge">
+                    <span class="uni-icon">⚓</span>
+                    <span class="uni-name">Đại học Hàng Hải Việt Nam</span>
+                    <span class="uni-eng">Vietnam Maritime University</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== EVENT DETAILS ===== -->
+        <section class="section details-section" id="details">
+            <h2 class="section-title reveal">
+                <span class="title-ornament">✦</span>
+                Thông Tin Buổi Lễ
+                <span class="title-ornament">✦</span>
+            </h2>
+            <div class="details-grid">
+                <div class="detail-card reveal" style="--delay: 0.1s">
+                    <div class="card-icon">📅</div>
+                    <h3 class="card-label">Ngày</h3>
+                    <p class="card-value">15 Tháng 10, 2026</p>
+                    <p class="card-sub">Thứ Năm</p>
+                </div>
+                <div class="detail-card reveal" style="--delay: 0.2s">
+                    <div class="card-icon">🕐</div>
+                    <h3 class="card-label">Thời Gian</h3>
+                    <p class="card-value">08:00 Sáng</p>
+                    <p class="card-sub">Đón khách từ 07:30</p>
+                </div>
+                <div class="detail-card reveal" style="--delay: 0.3s">
+                    <div class="card-icon">📍</div>
+                    <h3 class="card-label">Địa Điểm</h3>
+                    <p class="card-value">Hội trường lớn</p>
+                    <p class="card-sub">Đại học Hàng Hải Việt Nam</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== COUNTDOWN ===== -->
+        <section class="section countdown-section" id="countdown">
+            <h2 class="section-title reveal">
+                <span class="title-ornament">✦</span>
+                Đếm Ngược
+                <span class="title-ornament">✦</span>
+            </h2>
+            <p class="countdown-subtitle reveal">Còn bao lâu nữa đến ngày trọng đại?</p>
+            <div class="countdown-timer reveal">
+                <div class="time-unit">
+                    <div class="time-value" id="countDays">00</div>
+                    <div class="time-label">Ngày</div>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                    <div class="time-value" id="countHours">00</div>
+                    <div class="time-label">Giờ</div>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                    <div class="time-value" id="countMinutes">00</div>
+                    <div class="time-label">Phút</div>
+                </div>
+                <div class="time-separator">:</div>
+                <div class="time-unit">
+                    <div class="time-value" id="countSeconds">00</div>
+                    <div class="time-label">Giây</div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- ===== RSVP & PHOTO BOOTH ===== -->
+        <section class="section rsvp-section" id="rsvp">
+            <h2 class="section-title reveal">
+                <span class="title-ornament">✦</span>
+                Xác Nhận Tham Dự & Lời Chúc
+                <span class="title-ornament">✦</span>
+            </h2>
+            <p class="rsvp-subtitle reveal">Chụp ảnh kỷ niệm, gửi lời chúc và xác nhận tham dự cùng Quỳnh! 💕</p>
+
+            <div class="rsvp-unified-container reveal">
+                <!-- PHOTO BOOTH CARD -->
+                <div class="rsvp-photobooth-card">
+                    <div class="photobooth-card-header">
+                        <span class="photobooth-badge">📸 Photo Booth Kỷ Niệm</span>
+                        <p class="photobooth-card-desc">Chụp ảnh cùng khung tốt nghiệp để gửi kèm lời chúc</p>
+                    </div>
+
+                    <!-- Camera preview -->
+                    <div class="camera-wrapper" id="cameraWrapper">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <canvas id="photoCanvas" style="display:none;"></canvas>
+
+                        <!-- Graduation frame overlay -->
+                        <div class="photo-frame" id="photoFrame">
+                            <div class="frame-corner top-left">🎓</div>
+                            <div class="frame-corner top-right">⭐</div>
+                            <div class="frame-corner bottom-left">✨</div>
+                            <div class="frame-corner bottom-right">🎓</div>
+                            <div class="frame-banner">
+                                <span>🎓 Chúc Mừng Tốt Nghiệp 🎓</span>
+                            </div>
+                            <div class="frame-name-banner">
+                                <span>Vũ Thị Ngọc Quỳnh — Thạc Sĩ QLKT</span>
+                            </div>
+                        </div>
+
+                        <!-- Captured photo display -->
+                        <img id="capturedPhoto" class="captured-photo" style="display:none;" alt="Ảnh chụp">
+
+                        <!-- Camera placeholder -->
+                        <div class="camera-placeholder" id="cameraPlaceholder">
+                            <span class="placeholder-icon">📸</span>
+                            <span class="placeholder-text">Nhấn nút bên dưới để bật camera</span>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="photobooth-controls">
+                        <button type="button" class="photo-btn start-btn" id="startCameraBtn" onclick="startCamera()">
+                            📷 Bật Camera
+                        </button>
+                        <button type="button" class="photo-btn capture-btn" id="captureBtn" onclick="capturePhoto()" style="display:none;">
+                            📸 Chụp Ảnh!
+                        </button>
+                        <button type="button" class="photo-btn retake-btn" id="retakeBtn" onclick="retakePhoto()" style="display:none;">
+                            🔄 Chụp Lại
+                        </button>
+                        <button type="button" class="photo-btn download-btn" id="downloadBtn" onclick="downloadPhoto()" style="display:none;">
+                            💾 Tải Về
+                        </button>
+                    </div>
+
+                    <!-- Sticker selector -->
+                    <div class="sticker-selector" id="stickerSelector" style="display:none;">
+                        <p class="sticker-label">Khung tốt nghiệp:</p>
+                        <div class="sticker-list">
+                            <button type="button" class="sticker-btn active" onclick="selectSticker('classic')" data-sticker="classic">🎓 Classic</button>
+                            <button type="button" class="sticker-btn" onclick="selectSticker('fun')" data-sticker="fun">🎉 Vui nhộn</button>
+                            <button type="button" class="sticker-btn" onclick="selectSticker('elegant')" data-sticker="elegant">✨ Sang trọng</button>
+                            <button type="button" class="sticker-btn" onclick="selectSticker('none')" data-sticker="none">❌ Không khung</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORM CARD -->
+                <div class="rsvp-form-card">
+                    <form class="rsvp-form" id="rsvpForm" onsubmit="submitRSVP(event)">
+                        <div class="form-group">
+                            <label for="guestName">Họ và Tên <span class="form-required">*</span></label>
+                            <input type="text" id="guestName" placeholder="Nhập họ tên của bạn..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="guestRelation">Mối quan hệ</label>
+                            <select id="guestRelation">
+                                <option value="Bạn bè">Bạn bè</option>
+                                <option value="Gia đình">Gia đình</option>
+                                <option value="Đồng nghiệp">Đồng nghiệp</option>
+                                <option value="Thầy cô">Thầy cô</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Xác nhận tham dự <span class="form-required">*</span></label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="attendance" value="yes" checked>
+                                    <span class="radio-custom"></span>
+                                    <span>✅ Sẽ tham dự</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="attendance" value="no">
+                                    <span class="radio-custom"></span>
+                                    <span>❌ Không thể tham dự</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="guestWish">Lời chúc gửi đến Quỳnh 💌</label>
+                            <textarea id="guestWish" rows="3" placeholder="Viết lời chúc tốt đẹp nhất cho Quỳnh..."></textarea>
+                        </div>
+
+                        <!-- Attached photo status inside form -->
+                        <div class="form-photo-status" id="formPhotoStatus">
+                            <div class="photo-status-empty" id="photoStatusEmpty">
+                                <span class="photo-status-icon">💡</span>
+                                <span>Chụp ảnh ở khung Photo Booth bên cạnh để đính kèm vào lời chúc (tùy chọn).</span>
+                            </div>
+                            <div class="photo-status-attached" id="photoStatusAttached" style="display:none;">
+                                <div class="attached-img-preview" onclick="openLightbox(document.getElementById('attachedThumbImg').src)">
+                                    <img id="attachedThumbImg" src="" alt="Ảnh đính kèm">
+                                </div>
+                                <div class="attached-img-details">
+                                    <span class="attached-badge">📸 Đã đính kèm ảnh kỷ niệm!</span>
+                                    <button type="button" class="btn-remove-photo" onclick="removeAttachedPhoto()">✕ Bỏ ảnh</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span id="submitBtnText">💐 Gửi Xác Nhận & Lời Chúc</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== WISHES BOARD ===== -->
+        <section class="section wishes-section" id="wishes">
+            <h2 class="section-title reveal">
+                <span class="title-ornament">✦</span>
+                Bảng Lời Chúc
+                <span class="title-ornament">✦</span>
+            </h2>
+            <p class="wishes-subtitle reveal">Những lời chúc tốt đẹp từ mọi người 💕</p>
+            <div class="wishes-actions reveal">
+                <button type="button" class="btn-refresh-wishes" id="btnRefreshWishes" onclick="manualRefreshWishes()">
+                    <span id="refreshIcon">🔄</span> Cập nhật lời chúc mới nhất
+                </button>
+            </div>
+            <div class="wishes-grid" id="wishesGrid">
+                <!-- Wishes will be dynamically added here -->
+            </div>
+            <p class="no-wishes" id="noWishes">Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc! 🌟</p>
+        </section>
+
+        <!-- ===== MAP ===== -->
+        <section class="section map-section" id="map">
+            <h2 class="section-title reveal">
+                <span class="title-ornament">✦</span>
+                Địa Điểm
+                <span class="title-ornament">✦</span>
+            </h2>
+            <div class="map-info reveal">
+                <div class="map-address">
+                    <span class="map-icon">🏛️</span>
+                    <div>
+                        <strong>Đại học Hàng Hải Việt Nam</strong>
+                        <p>484 Lạch Tray, Kênh Dương, Lê Chân, Hải Phòng</p>
+                    </div>
+                </div>
+            </div>
+            <div class="map-container reveal">
+                <iframe 
+                    src="https://maps.google.com/maps?q=%C4%90%E1%BA%A1i+h%E1%BB%8Dc+H%C3%A0ng+H%E1%BA%A3i+Vi%E1%BB%87t+Nam+H%E1%BA%A3i+Ph%C3%B2ng&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                    width="100%" 
+                    height="400" 
+                    style="border:0; border-radius: 16px;" 
+                    allowfullscreen="" 
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Bản đồ Đại học Hàng Hải Việt Nam">
+                </iframe>
+            </div>
+            <a class="directions-btn reveal" href="https://www.google.com/maps/dir/?api=1&destination=%C4%90%E1%BA%A1i+h%E1%BB%8Dc+H%C3%A0ng+H%E1%BA%A3i+Vi%E1%BB%87t+Nam" target="_blank" rel="noopener noreferrer">
+                🗺️ Chỉ đường đến địa điểm
+            </a>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer" id="footer">
+            <div class="footer-content reveal">
+                <div class="footer-divider">
+                    <span>❖</span>
+                </div>
+                <p class="footer-quote">"Giáo dục là vũ khí mạnh nhất mà bạn có thể dùng để thay đổi thế giới"</p>
+                <p class="footer-quote-author">— Nelson Mandela</p>
+
+                <div class="share-section">
+                    <p class="share-label">Chia sẻ thiệp mời</p>
+                    <div class="share-buttons">
+                        <button class="share-btn facebook" onclick="shareOn('facebook')" title="Chia sẻ Facebook">
+                            <span>f</span>
+                        </button>
+                        <button class="share-btn messenger" onclick="shareOn('messenger')" title="Gửi qua Messenger">
+                            <span>💬</span>
+                        </button>
+                        <button class="share-btn share-native" onclick="shareOn('native')" title="Chia sẻ tới ứng dụng khác">
+                            <span>📲</span>
+                        </button>
+                        <button class="share-btn copy" onclick="copyLink()" title="Sao chép liên kết">
+                            <span>🔗</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="footer-thanks">
+                    <div class="footer-avatar-wrap" onclick="openLightbox('quynh.jpg')" title="Nhấn để xem ảnh">
+                        <img src="quynh.jpg" alt="Vũ Thị Ngọc Quỳnh" class="footer-avatar">
+                    </div>
+                    <p>Xin chân thành cảm ơn!</p>
+                    <p class="footer-name">Vũ Thị Ngọc Quỳnh 💕</p>
+                </div>
+                <div class="creator-badge">
+                    <span>✨ Made by <strong>Hien Truong</strong> ✨</span>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- ===== LIGHTBOX VIEWER ===== -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <button type="button" class="lightbox-close" id="lightboxCloseBtn" onclick="closeLightbox(event)" title="Đóng (Esc)">✕</button>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" alt="Ảnh phóng to">
+        </div>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✅</span>
+        <span class="toast-text" id="toastText">Đã gửi thành công!</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
