@@ -3,6 +3,7 @@
 // ============================================
 const GRADUATION_DATE = new Date('2026-10-15T08:00:00+07:00');
 const GRADUATE_NAME = 'Vũ Thị Ngọc Quỳnh';
+const SITE_URL = 'https://tgh1701.github.io/graduation_invitation_nq/';
 
 // CLOUD DATABASE API (Google Sheets hoặc Firebase)
 // Khi dán link Web App Google Sheets vào đây, lời chúc sẽ được lưu trực tuyến
@@ -700,18 +701,22 @@ function playWinSound() {
 // ============================================
 // SHARE FUNCTIONS
 // ============================================
-function shareOn(platform) {
-    const rawUrl = window.location.href;
+function getShareUrl() {
     const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const publicUrl = isLocal ? 'https://vimaru.edu.vn' : rawUrl;
+    return isLocal ? SITE_URL : window.location.href;
+}
+
+function shareOn(platform) {
+    const targetUrl = getShareUrl();
     const shareText = `🎓 Trân trọng kính mời bạn đến dự Lễ Tốt Nghiệp Thạc Sĩ Quản lí Kinh tế của ${GRADUATE_NAME} tại Đại học Hàng Hải Việt Nam! 🎉`;
+    const fullMessage = `${shareText}\n💌 Mở thiệp tại: ${targetUrl}`;
 
     if (platform === 'native') {
         if (navigator.share) {
             navigator.share({
                 title: `Lễ Tốt Nghiệp Thạc Sĩ - ${GRADUATE_NAME}`,
                 text: shareText,
-                url: isLocal ? publicUrl : rawUrl,
+                url: targetUrl,
             }).catch(() => { });
             return;
         } else {
@@ -721,52 +726,68 @@ function shareOn(platform) {
     }
 
     if (platform === 'facebook') {
-        if (isLocal) {
-            copyTextToClipboard(`${shareText}\n${rawUrl}`);
-            showToast('📋', 'Đã copy lời mời! (Khi tải web lên mạng, Facebook sẽ tự load thiệp)');
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=620,height=520');
-        } else {
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(rawUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=620,height=520');
-        }
+        copyTextToClipboard(fullMessage);
+        showToast('📘', 'Đang mở Facebook chia sẻ...');
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(targetUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=620,height=520');
     } else if (platform === 'messenger') {
-        copyTextToClipboard(`${shareText}\n${rawUrl}`);
-        showToast('💬', 'Đã sao chép lời mời! Bạn có thể dán ngay vào Messenger.');
+        copyTextToClipboard(fullMessage);
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            window.location.href = `fb-messenger://share?link=${encodeURIComponent(isLocal ? publicUrl : rawUrl)}`;
-        } else {
-            window.open('https://www.messenger.com', '_blank');
+
+        // Trên điện thoại: gọi Web Share API để chọn ngay Messenger / Zalo / SMS
+        if (isMobile && navigator.share) {
+            navigator.share({
+                title: `Lễ Tốt Nghiệp Thạc Sĩ - ${GRADUATE_NAME}`,
+                text: shareText,
+                url: targetUrl,
+            }).catch(err => {
+                if (err.name !== 'AbortError') {
+                    showToast('💬', 'Đã sao chép lời mời! Đang mở Messenger...');
+                    window.open('https://m.me', '_blank');
+                }
+            });
+            return;
         }
+
+        // Trên máy tính hoặc trình duyệt không hỗ trợ Web Share
+        showToast('💬', 'Đã sao chép lời mời! Bạn chỉ cần dán (Ctrl+V) vào tin nhắn.');
+        const messengerUrl = isMobile ? 'https://m.me' : 'https://www.messenger.com';
+        window.open(messengerUrl, '_blank');
     }
 }
 
 function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).catch(() => { });
-    } else {
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+            return;
+        }
+    } catch (e) { }
+    fallbackCopy(text);
+}
+
+function fallbackCopy(text) {
+    try {
         const input = document.createElement('textarea');
         input.value = text;
+        input.style.position = 'fixed';
+        input.style.top = '-9999px';
+        input.style.left = '-9999px';
+        input.setAttribute('readonly', '');
         document.body.appendChild(input);
         input.select();
+        input.setSelectionRange(0, 99999);
         document.execCommand('copy');
         document.body.removeChild(input);
+    } catch (e) {
+        console.warn('Fallback copy failed:', e);
     }
 }
 
 function copyLink() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        showToast('🔗', 'Đã sao chép liên kết!');
-    }).catch(() => {
-        // Fallback
-        const input = document.createElement('input');
-        input.value = window.location.href;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        showToast('🔗', 'Đã sao chép liên kết!');
-    });
+    const targetUrl = getShareUrl();
+    copyTextToClipboard(targetUrl);
+    showToast('🔗', 'Đã sao chép liên kết thiệp mời!');
 }
 
 // ============================================
