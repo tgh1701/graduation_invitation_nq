@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScrollReveal();
     setupScrollToTop();
     setupFireworks();
+    setupSectionPaginationObserver();
 });
 
 // ============================================
@@ -483,44 +484,141 @@ setInterval(() => {
     }
 }, 35000);
 
+let currentWishesPage = 1;
+const WISHES_PER_PAGE = 6;
+let cachedAllWishes = [];
+let currentWishFilter = 'all';
+
+function checkWishHasPhoto(wish) {
+    if (!wish || !wish.photo) return false;
+    const photoSrc = repairPhotoDataUrl(wish.photo);
+    return Boolean(photoSrc && typeof photoSrc === 'string' && photoSrc.startsWith('data:image/') && photoSrc.length > 50);
+}
+
+function setWishFilter(filter) {
+    currentWishFilter = filter;
+    currentWishesPage = 1;
+
+    // Update active tab buttons
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+    });
+
+    renderWishCards();
+}
+
+function getFilteredWishes() {
+    if (currentWishFilter === 'photo') {
+        return cachedAllWishes.filter(checkWishHasPhoto);
+    } else if (currentWishFilter === 'text') {
+        return cachedAllWishes.filter(w => !checkWishHasPhoto(w));
+    }
+    return cachedAllWishes;
+}
+
+function changeWishesPage(newPage) {
+    const filteredWishes = getFilteredWishes();
+    const totalPages = Math.ceil(filteredWishes.length / WISHES_PER_PAGE) || 1;
+    if (newPage < 1 || newPage > totalPages) return;
+    currentWishesPage = newPage;
+    renderWishCards();
+    const wishesSec = document.getElementById('wishes');
+    if (wishesSec) {
+        wishesSec.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
 function renderWishCards(wishes) {
+    if (Array.isArray(wishes)) {
+        cachedAllWishes = wishes;
+    }
+    const allWishes = cachedAllWishes;
     const grid = document.getElementById('wishesGrid');
     const noWishes = document.getElementById('noWishes');
+    const paginationEl = document.getElementById('wishesPagination');
     if (!grid) return;
 
     grid.innerHTML = '';
 
-    if (!wishes || wishes.length === 0) {
-        if (noWishes) noWishes.classList.remove('hidden');
+    // Update counters on filter tabs
+    let photoCount = 0;
+    let textCount = 0;
+    allWishes.forEach(w => {
+        if (checkWishHasPhoto(w)) {
+            photoCount++;
+        } else {
+            textCount++;
+        }
+    });
+
+    const countAllEl = document.getElementById('countAll');
+    const countPhotoEl = document.getElementById('countPhoto');
+    const countTextEl = document.getElementById('countText');
+    if (countAllEl) countAllEl.textContent = allWishes.length;
+    if (countPhotoEl) countPhotoEl.textContent = photoCount;
+    if (countTextEl) countTextEl.textContent = textCount;
+
+    // Get items based on current active filter
+    const filteredWishes = getFilteredWishes();
+
+    if (!filteredWishes || filteredWishes.length === 0) {
+        if (noWishes) {
+            noWishes.classList.remove('hidden');
+            if (currentWishFilter === 'photo') {
+                noWishes.textContent = 'Chưa có lời chúc nào kèm ảnh chụp. Hãy chụp một bức ảnh ở Photo Booth và gửi nhé! 📸';
+            } else if (currentWishFilter === 'text') {
+                noWishes.textContent = 'Chưa có lời chúc nào chỉ có chữ. 💌';
+            } else {
+                noWishes.textContent = 'Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc! 🌟';
+            }
+        }
+        if (paginationEl) paginationEl.style.display = 'none';
         return;
     }
 
     if (noWishes) noWishes.classList.add('hidden');
 
-    wishes.forEach(wish => {
-        const card = document.createElement('div');
-        card.className = 'wish-card';
+    const totalFiltered = filteredWishes.length;
+    const totalPages = Math.ceil(totalFiltered / WISHES_PER_PAGE);
 
-        const initial = wish.name.charAt(0).toUpperCase();
+    if (currentWishesPage > totalPages) currentWishesPage = totalPages;
+    if (currentWishesPage < 1) currentWishesPage = 1;
+
+    const startIdx = (currentWishesPage - 1) * WISHES_PER_PAGE;
+    const pageItems = filteredWishes.slice(startIdx, startIdx + WISHES_PER_PAGE);
+
+    pageItems.forEach(wish => {
+        const card = document.createElement('div');
+        const hasValidPhoto = checkWishHasPhoto(wish);
+        card.className = `wish-card ${hasValidPhoto ? 'has-photo' : 'text-only'}`;
+
+        const initial = wish.name ? wish.name.charAt(0).toUpperCase() : 'G';
         const attendClass = wish.attendance === 'yes' ? 'attending' : 'not-attending';
         const attendText = wish.attendance === 'yes' ? '✅ Sẽ tham dự' : '❌ Không thể tham dự';
 
-        // Photo section (if exists, automatically repair truncated base64 if needed)
-        const photoSrc = repairPhotoDataUrl(wish.photo);
-        const hasValidPhoto = photoSrc && typeof photoSrc === 'string' && photoSrc.startsWith('data:image/');
-        const photoHtml = hasValidPhoto
-            ? `<div class="wish-photo" onclick="openLightbox(this.querySelector('img').src)">
-                    <img src="${photoSrc}" alt="Photo Booth" 
+        // Photo section
+        let photoHtml = '';
+        if (hasValidPhoto) {
+            const photoSrc = repairPhotoDataUrl(wish.photo);
+            photoHtml = `
+                <div class="wish-photo" onclick="openLightbox(this.querySelector('img').src)">
+                    <img src="${photoSrc}" alt="Ảnh kỷ niệm" 
                          onload="if(this.naturalWidth === 0 || this.naturalHeight === 0) { this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none'; }"
                          onerror="this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none';" />
-               </div>`
-            : '';
+                </div>
+            `;
+        }
 
         const photoBadge = hasValidPhoto
-            ? '<span class="wish-photo-badge">📸 Photo Booth</span>'
+            ? '<span class="wish-photo-badge">📸 Kỷ niệm Photo Booth</span>'
+            : '';
+
+        const quoteWatermark = !hasValidPhoto
+            ? '<div class="quote-watermark">“</div>'
             : '';
 
         card.innerHTML = `
+            ${quoteWatermark}
             <div class="wish-header">
                 <div class="wish-avatar">${initial}</div>
                 <div class="wish-info">
@@ -530,12 +628,73 @@ function renderWishCards(wishes) {
             </div>
             ${photoHtml}
             <p class="wish-text">"${escapeHtml(wish.wish)}"</p>
-            <span class="wish-attendance ${attendClass}">${attendText}</span>
-            ${photoBadge}
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-top: 14px;">
+                <span class="wish-attendance ${attendClass}">${attendText}</span>
+                ${photoBadge}
+            </div>
         `;
 
         grid.appendChild(card);
     });
+
+    // Render Pagination Controls
+    if (paginationEl) {
+        if (totalPages > 1) {
+            paginationEl.style.display = 'flex';
+            let pageBtnsHtml = '';
+            for (let p = 1; p <= totalPages; p++) {
+                pageBtnsHtml += `<button type="button" class="page-num-btn ${p === currentWishesPage ? 'active' : ''}" onclick="changeWishesPage(${p})">${p}</button>`;
+            }
+
+            paginationEl.innerHTML = `
+                <button type="button" class="page-nav-btn" onclick="changeWishesPage(${currentWishesPage - 1})" ${currentWishesPage === 1 ? 'disabled' : ''}>‹ Trước</button>
+                <div class="page-numbers">${pageBtnsHtml}</div>
+                <button type="button" class="page-nav-btn" onclick="changeWishesPage(${currentWishesPage + 1})" ${currentWishesPage === totalPages ? 'disabled' : ''}>Sau ›</button>
+                <span class="page-info-count">(${totalFiltered} lời chúc)</span>
+            `;
+        } else {
+            paginationEl.style.display = 'none';
+        }
+    }
+}
+
+// ============================================
+// SECTION PAGINATION & NAVIGATION
+// ============================================
+const SECTION_IDS = ['hero', 'details', 'rsvp', 'wishes', 'map'];
+
+function scrollToSection(sectionId) {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    const yOffset = -20;
+    const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+
+    updateActiveSectionDot(sectionId);
+}
+
+function updateActiveSectionDot(activeId) {
+    document.querySelectorAll('.snap-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.dataset.target === activeId);
+    });
+}
+
+function setupSectionPaginationObserver() {
+    const sections = SECTION_IDS.map(id => document.getElementById(id)).filter(Boolean);
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.25) {
+                updateActiveSectionDot(entry.target.id);
+            }
+        });
+    }, {
+        threshold: [0.25, 0.5]
+    });
+
+    sections.forEach(sec => observer.observe(sec));
 }
 
 function escapeHtml(text) {

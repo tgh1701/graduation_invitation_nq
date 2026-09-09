@@ -1381,23 +1381,83 @@ main:not(.main-hidden) {
     margin-bottom: 20px;
 }
 
-.wishes-actions {
+.wishes-controls {
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.wishes-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 5px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 50px;
+    color: var(--text-light);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.filter-tab:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-tab.active {
+    background: var(--gold-primary);
+    color: var(--navy-900);
+    box-shadow: 0 2px 12px var(--gold-glow);
+}
+
+.filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--gold-light);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.filter-tab.active .filter-count {
+    background: var(--navy-900);
+    color: var(--gold-light);
 }
 
 .btn-refresh-wishes {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 24px;
+    padding: 9px 22px;
     background: rgba(212, 175, 55, 0.12);
     border: 1px solid rgba(212, 175, 55, 0.4);
     border-radius: 50px;
     color: var(--gold-light);
     font-family: inherit;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1427,31 +1487,75 @@ main:not(.main-hidden) {
     to { transform: rotate(360deg); }
 }
 
+/* Multi-column Masonry Layout */
 .wishes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
+    column-count: 3;
+    column-gap: 20px;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .wishes-grid {
+        column-count: 2;
+        column-gap: 16px;
+    }
+}
+
+@media (max-width: 580px) {
+    .wishes-grid {
+        column-count: 1;
+    }
 }
 
 .wish-card {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 20px;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 24px;
-    backdrop-filter: blur(8px);
-    transition: all 0.3s ease;
-    animation: wishAppear 0.5s ease-out;
+    border-radius: 18px;
+    padding: 22px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    vertical-align: top;
+    animation: wishAppear 0.4s ease-out;
 }
 
 @keyframes wishAppear {
-    from { opacity: 0; transform: scale(0.9) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .wish-card:hover {
     border-color: var(--gold-primary);
     transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 15px var(--gold-glow);
+}
+
+/* Card Variations */
+.wish-card.has-photo {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-color: rgba(212, 175, 55, 0.25);
+}
+
+.wish-card.text-only {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.quote-watermark {
+    position: absolute;
+    top: 6px;
+    right: 14px;
+    font-size: 4rem;
+    font-family: 'Playfair Display', serif;
+    line-height: 1;
+    color: rgba(212, 175, 55, 0.1);
+    pointer-events: none;
+    user-select: none;
 }
 
 .wish-header {
@@ -2220,35 +2324,64 @@ main:not(.main-hidden) {
    ============================================ */
 .wish-photo {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 12px;
     overflow: hidden;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(212, 175, 55, 0.35);
     cursor: pointer;
-    transition: transform 0.3s ease;
+    position: relative;
+    background: rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 
 .wish-photo:hover {
     transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
 .wish-photo img {
     width: 100%;
+    height: auto;
     display: block;
-    border-radius: 10px;
+    border-radius: 11px;
+}
+
+.wish-photo::after {
+    content: '🔍 Nhấn xem ảnh lớn';
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(10, 14, 39, 0.85);
+    color: var(--gold-light);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+}
+
+.wish-photo:hover::after {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .wish-photo-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    border-radius: 12px;
-    background: rgba(108, 92, 231, 0.15);
-    color: #a29bfe;
-    border: 1px solid rgba(108, 92, 231, 0.3);
-    margin-top: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(108, 92, 231, 0.2));
+    color: var(--gold-light);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    margin-top: 10px;
 }
 
 /* Photo lightbox */
@@ -2434,7 +2567,27 @@ main:not(.main-hidden) {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+    .section-pagination {
+        display: none !important;
+    }
+
+    .music-toggle {
+        top: 14px;
+        right: 14px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .scroll-top-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+
     .graduate-portrait-wrapper {
         width: 160px;
         height: 160px;
@@ -2498,8 +2651,72 @@ main:not(.main-hidden) {
     }
 
     .wishes-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
+        column-count: 1;
+        column-gap: 0;
+    }
+
+    .wishes-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .wishes-filter-tabs {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .filter-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 7px 4px;
+        font-size: 0.76rem;
+    }
+
+    .filter-count {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.68rem;
+        padding: 0 4px;
+    }
+
+    .btn-refresh-wishes {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 16px;
+        font-size: 0.84rem;
+    }
+
+    .section-next-hint {
+        max-width: 90%;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 7px 16px;
+    }
+
+    .wishes-pagination {
+        gap: 6px;
+    }
+
+    .page-nav-btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+    }
+
+    .page-num-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+
+    .page-info-count {
+        width: 100%;
+        text-align: center;
+        margin-top: 4px;
+        margin-left: 0;
     }
 
     .rsvp-photobooth-card,
@@ -2602,3 +2819,241 @@ main:not(.main-hidden) {
         font-size: 1.7rem;
     }
 }
+
+/* ============================================
+   SECTION PAGINATION & SCROLL SNAP
+   ============================================ */
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
+}
+
+.hero,
+.details-section,
+.rsvp-section,
+.wishes-section,
+.map-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+}
+
+.section-pagination {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 999;
+    background: rgba(10, 14, 39, 0.78);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 30px;
+    padding: 12px 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(212, 175, 55, 0.15);
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.snap-dot {
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.snap-dot-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.snap-dot:hover .snap-dot-circle {
+    border-color: var(--gold-light);
+    transform: scale(1.25);
+    background: rgba(212, 175, 55, 0.3);
+}
+
+.snap-dot.active .snap-dot-circle {
+    width: 12px;
+    height: 12px;
+    border-color: var(--gold-light);
+    background: var(--gold-primary);
+    box-shadow: 0 0 12px var(--gold-primary);
+}
+
+.snap-dot-label {
+    position: absolute;
+    right: 28px;
+    background: rgba(15, 21, 53, 0.95);
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-light);
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(6px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.snap-dot:hover .snap-dot-label {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* Next Section Hint Button */
+.section-next-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    gap: 8px;
+    margin: 32px auto 6px;
+    padding: 8px 24px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50px;
+    color: var(--gold-light);
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    clear: both;
+}
+
+.section-next-hint:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--gold-primary);
+    transform: translateY(2px);
+    box-shadow: 0 4px 20px var(--gold-glow);
+}
+
+.next-hint-arrow {
+    display: inline-block;
+    animation: hintArrowBounce 1.4s ease-in-out infinite;
+    font-size: 1rem;
+}
+
+@keyframes hintArrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+}
+
+/* Wishes Board Pagination */
+.wishes-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.page-nav-btn {
+    padding: 7px 16px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 20px;
+    color: var(--gold-light);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+    background: var(--gold-primary);
+    color: var(--navy-900);
+}
+
+.page-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-num-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-light);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.page-num-btn:hover {
+    border-color: var(--gold-primary);
+    color: var(--gold-light);
+}
+
+.page-num-btn.active {
+    background: var(--gold-primary);
+    color: var(--navy-900);
+    border-color: var(--gold-light);
+    box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.page-info-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
+@media (max-width: 768px) {
+    .section-pagination {
+        right: 8px;
+        padding: 8px 5px;
+        gap: 8px;
+    }
+
+    .snap-dot-circle {
+        width: 8px;
+        height: 8px;
+    }
+
+    .snap-dot.active .snap-dot-circle {
+        width: 10px;
+        height: 10px;
+    }
+
+    .snap-dot-label {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .section-pagination {
+        display: none !important;
+    }
+}
+

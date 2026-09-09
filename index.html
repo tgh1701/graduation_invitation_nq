@@ -14,7 +14,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -63,6 +66,30 @@
     <!-- ========== MAIN CONTENT ========== -->
     <main id="mainContent" class="main-hidden">
 
+        <!-- ===== SECTION PAGINATION (FLOATING NAV) ===== -->
+        <nav class="section-pagination" id="sectionPagination" aria-label="Phân trang thiệp">
+            <button type="button" class="snap-dot active" onclick="scrollToSection('hero')" data-target="hero" title="Trang 1: Lời Mời">
+                <span class="snap-dot-circle"></span>
+                <span class="snap-dot-label">Thiệp Mời</span>
+            </button>
+            <button type="button" class="snap-dot" onclick="scrollToSection('details')" data-target="details" title="Trang 2: Thông Tin & Đếm Ngược">
+                <span class="snap-dot-circle"></span>
+                <span class="snap-dot-label">Thời Gian</span>
+            </button>
+            <button type="button" class="snap-dot" onclick="scrollToSection('rsvp')" data-target="rsvp" title="Trang 3: Chụp Ảnh & Gửi Lời Chúc">
+                <span class="snap-dot-circle"></span>
+                <span class="snap-dot-label">Gửi Lời Chúc</span>
+            </button>
+            <button type="button" class="snap-dot" onclick="scrollToSection('wishes')" data-target="wishes" title="Trang 4: Bảng Lời Chúc">
+                <span class="snap-dot-circle"></span>
+                <span class="snap-dot-label">Bảng Lời Chúc</span>
+            </button>
+            <button type="button" class="snap-dot" onclick="scrollToSection('map')" data-target="map" title="Trang 5: Địa Điểm & Bản Đồ">
+                <span class="snap-dot-circle"></span>
+                <span class="snap-dot-label">Địa Điểm</span>
+            </button>
+        </nav>
+
         <!-- ===== HERO SECTION ===== -->
         <section class="hero" id="hero">
             <div class="hero-ornament top-left"></div>
@@ -102,14 +129,18 @@
                     <span class="uni-name">Đại học Hàng Hải Việt Nam</span>
                     <span class="uni-eng">Vietnam Maritime University</span>
                 </div>
+                <div class="section-next-hint" onclick="scrollToSection('details')" title="Xem thông tin buổi lễ">
+                    <span>Xem Thông Tin Buổi Lễ</span>
+                    <span class="next-hint-arrow">↓</span>
+                </div>
             </div>
         </section>
 
-        <!-- ===== EVENT DETAILS ===== -->
+        <!-- ===== EVENT DETAILS & COUNTDOWN (UNIFIED PAGE) ===== -->
         <section class="section details-section" id="details">
             <h2 class="section-title reveal">
                 <span class="title-ornament">✦</span>
-                Thông Tin Buổi Lễ
+                Thông Tin & Đếm Ngược
                 <span class="title-ornament">✦</span>
             </h2>
             <div class="details-grid">
@@ -132,36 +163,36 @@
                     <p class="card-sub">Đại học Hàng Hải Việt Nam</p>
                 </div>
             </div>
-        </section>
 
-        <!-- ===== COUNTDOWN ===== -->
-        <section class="section countdown-section" id="countdown">
-            <h2 class="section-title reveal">
-                <span class="title-ornament">✦</span>
-                Đếm Ngược
-                <span class="title-ornament">✦</span>
-            </h2>
-            <p class="countdown-subtitle reveal">Còn bao lâu nữa đến ngày trọng đại?</p>
-            <div class="countdown-timer reveal">
-                <div class="time-unit">
-                    <div class="time-value" id="countDays">00</div>
-                    <div class="time-label">Ngày</div>
+            <!-- COUNTDOWN TIMER CONTAINER -->
+            <div class="countdown-container reveal" id="countdown">
+                <p class="countdown-subtitle">⏳ Đếm ngược đến khoảnh khắc trao bằng</p>
+                <div class="countdown-timer">
+                    <div class="time-unit">
+                        <div class="time-value" id="countDays">00</div>
+                        <div class="time-label">Ngày</div>
+                    </div>
+                    <div class="time-separator">:</div>
+                    <div class="time-unit">
+                        <div class="time-value" id="countHours">00</div>
+                        <div class="time-label">Giờ</div>
+                    </div>
+                    <div class="time-separator">:</div>
+                    <div class="time-unit">
+                        <div class="time-value" id="countMinutes">00</div>
+                        <div class="time-label">Phút</div>
+                    </div>
+                    <div class="time-separator">:</div>
+                    <div class="time-unit">
+                        <div class="time-value" id="countSeconds">00</div>
+                        <div class="time-label">Giây</div>
+                    </div>
                 </div>
-                <div class="time-separator">:</div>
-                <div class="time-unit">
-                    <div class="time-value" id="countHours">00</div>
-                    <div class="time-label">Giờ</div>
-                </div>
-                <div class="time-separator">:</div>
-                <div class="time-unit">
-                    <div class="time-value" id="countMinutes">00</div>
-                    <div class="time-label">Phút</div>
-                </div>
-                <div class="time-separator">:</div>
-                <div class="time-unit">
-                    <div class="time-value" id="countSeconds">00</div>
-                    <div class="time-label">Giây</div>
-                </div>
+            </div>
+
+            <div class="section-next-hint" onclick="scrollToSection('rsvp')" title="Chụp ảnh & gửi lời chúc">
+                <span>Chụp Ảnh & Gửi Lời Chúc</span>
+                <span class="next-hint-arrow">↓</span>
             </div>
         </section>
 
@@ -308,6 +339,11 @@
                     </form>
                 </div>
             </div>
+
+            <div class="section-next-hint" onclick="scrollToSection('wishes')" title="Xem các lời chúc">
+                <span>Xem Bảng Lời Chúc</span>
+                <span class="next-hint-arrow">↓</span>
+            </div>
         </section>
 
         <!-- ===== WISHES BOARD ===== -->
@@ -318,15 +354,33 @@
                 <span class="title-ornament">✦</span>
             </h2>
             <p class="wishes-subtitle reveal">Những lời chúc tốt đẹp từ mọi người 💕</p>
-            <div class="wishes-actions reveal">
+            <div class="wishes-controls reveal">
+                <div class="wishes-filter-tabs" id="wishesFilterTabs">
+                    <button type="button" class="filter-tab active" onclick="setWishFilter('all')" data-filter="all">
+                        ✨ Tất cả <span class="filter-count" id="countAll">0</span>
+                    </button>
+                    <button type="button" class="filter-tab" onclick="setWishFilter('photo')" data-filter="photo">
+                        📸 Kèm ảnh <span class="filter-count" id="countPhoto">0</span>
+                    </button>
+                    <button type="button" class="filter-tab" onclick="setWishFilter('text')" data-filter="text">
+                        💌 Lời chúc <span class="filter-count" id="countText">0</span>
+                    </button>
+                </div>
                 <button type="button" class="btn-refresh-wishes" id="btnRefreshWishes" onclick="manualRefreshWishes()">
-                    <span id="refreshIcon">🔄</span> Cập nhật lời chúc mới nhất
+                    <span id="refreshIcon">🔄</span> Cập nhật
                 </button>
             </div>
             <div class="wishes-grid" id="wishesGrid">
                 <!-- Wishes will be dynamically added here -->
             </div>
+            <!-- Wishes Pagination Bar -->
+            <div class="wishes-pagination" id="wishesPagination" style="display:none;"></div>
             <p class="no-wishes" id="noWishes">Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc! 🌟</p>
+
+            <div class="section-next-hint" onclick="scrollToSection('map')" title="Xem bản đồ & địa điểm">
+                <span>Xem Bản Đồ & Địa Điểm</span>
+                <span class="next-hint-arrow">↓</span>
+            </div>
         </section>
 
         <!-- ===== MAP ===== -->
@@ -396,9 +450,9 @@
                     <p>Xin chân thành cảm ơn!</p>
                     <p class="footer-name">Vũ Thị Ngọc Quỳnh 💕</p>
                 </div>
-                <div class="creator-badge">
+                <!-- <div class="creator-badge">
                     <span>✨ Made by <strong>Hien Truong</strong> ✨</span>
-                </div>
+                </div> -->
             </div>
         </footer>
     </main>
@@ -417,6 +471,6 @@
         <span class="toast-text" id="toastText">Đã gửi thành công!</span>
     </div>
 
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>
