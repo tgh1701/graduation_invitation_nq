@@ -338,7 +338,7 @@ function submitRSVP(event) {
     if (hasAttachedPhoto) {
         const canvas = document.getElementById('photoCanvas');
         if (canvas) {
-            photoData = compressPhoto(canvas, 320);
+            photoData = compressPhoto(canvas, 280);
         }
     }
 
@@ -497,13 +497,14 @@ function renderWishCards(wishes) {
         const attendText = wish.attendance === 'yes' ? '✅ Sẽ tham dự' : '❌ Không thể tham dự';
 
         // Photo section (if exists)
-        const photoHtml = wish.photo
-            ? `<div class="wish-photo" onclick="openLightbox('${wish.photo}')">
-                    <img src="${wish.photo}" alt="Photo Booth" />
+        const hasValidPhoto = wish.photo && typeof wish.photo === 'string' && wish.photo.startsWith('data:image/');
+        const photoHtml = hasValidPhoto
+            ? `<div class="wish-photo" onclick="openLightbox(this.querySelector('img').src)">
+                    <img src="${wish.photo}" alt="Photo Booth" onerror="this.closest('.wish-photo').style.display='none'; const b=this.closest('.wish-card').querySelector('.wish-photo-badge'); if(b) b.style.display='none';" />
                </div>`
             : '';
 
-        const photoBadge = wish.photo
+        const photoBadge = hasValidPhoto
             ? '<span class="wish-photo-badge">📸 Photo Booth</span>'
             : '';
 
@@ -1257,14 +1258,36 @@ function selectSticker(type) {
 // PHOTO COMPRESSION & UTILS
 // ============================================
 
-function compressPhoto(sourceCanvas, maxWidth) {
-    const ratio = maxWidth / sourceCanvas.width;
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = maxWidth;
-    tempCanvas.height = sourceCanvas.height * ratio;
-    const ctx = tempCanvas.getContext('2d');
-    ctx.drawImage(sourceCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
-    return tempCanvas.toDataURL('image/jpeg', 0.65);
+function compressPhoto(sourceCanvas, initialWidth = 280) {
+    let width = Math.min(initialWidth, sourceCanvas.width);
+    let quality = 0.55;
+    let dataUrl = '';
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+        const ratio = width / sourceCanvas.width;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = Math.round(sourceCanvas.height * ratio);
+        const ctx = tempCanvas.getContext('2d');
+
+        // Nền tối đồng bộ màu thiệp để tránh lỗi trong suốt
+        ctx.fillStyle = '#0a0e27';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(sourceCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+        dataUrl = tempCanvas.toDataURL('image/jpeg', quality);
+
+        // Giới hạn 1 ô Google Sheets là 50.000 ký tự.
+        // Khống chế an toàn tuyệt đối dưới 35.000 ký tự để không bao giờ bị cắt cụt làm hỏng ảnh!
+        if (dataUrl.length <= 35000) {
+            return dataUrl;
+        }
+
+        // Nếu vượt quá, giảm kích thước và chất lượng nén theo từng nấc
+        width = Math.round(width * 0.82);
+        quality = Math.max(0.3, quality - 0.07);
+    }
+    return dataUrl;
 }
 
 // ============================================
