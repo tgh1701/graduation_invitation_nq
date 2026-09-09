@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -218,11 +218,15 @@
                         <button type="button" class="photo-btn start-btn" id="startCameraBtn" onclick="startCamera()">
                             📷 Bật Camera
                         </button>
+                        <button type="button" class="photo-btn upload-btn" id="uploadPhotoBtn" onclick="document.getElementById('photoFileInput').click()">
+                            📁 Tải Ảnh Có Sẵn
+                        </button>
+                        <input type="file" id="photoFileInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
                         <button type="button" class="photo-btn capture-btn" id="captureBtn" onclick="capturePhoto()" style="display:none;">
                             📸 Chụp Ảnh!
                         </button>
                         <button type="button" class="photo-btn retake-btn" id="retakeBtn" onclick="retakePhoto()" style="display:none;">
-                            🔄 Chụp Lại
+                            🔄 Chụp/Chọn Lại
                         </button>
                         <button type="button" class="photo-btn download-btn" id="downloadBtn" onclick="downloadPhoto()" style="display:none;">
                             💾 Tải Về
@@ -413,6 +417,6 @@
         <span class="toast-text" id="toastText">Đã gửi thành công!</span>
     </div>
 
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>

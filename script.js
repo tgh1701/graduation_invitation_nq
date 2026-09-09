@@ -20,6 +20,7 @@ let confettiParticles = [];
 let confettiAnimFrame = null;
 let cameraStream = null;
 let currentSticker = 'classic';
+let rawCapturedCanvas = null;
 
 // ============================================
 // INITIALIZATION
@@ -856,23 +857,67 @@ function createFireworkBurst(x, y) {
 // ============================================
 async function startCamera() {
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
-            audio: false
-        });
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+
+        let stream = null;
+        // Ưu tiên độ phân giải HD và chế độ user, tự động fallback nếu laptop kén driver
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                },
+                audio: false
+            });
+        } catch (e1) {
+            console.log('Retrying with basic video constraint...', e1);
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+        }
+
+        cameraStream = stream;
 
         const video = document.getElementById('cameraVideo');
         video.srcObject = cameraStream;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('autoplay', '');
+        video.muted = true;
+        video.style.display = 'block';
+
+        const capturedImg = document.getElementById('capturedPhoto');
+        if (capturedImg) capturedImg.style.display = 'none';
+
+        // Đảm bảo video bắt đầu phát hình ảnh (tránh lỗi đen màn hình trên laptop)
+        await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+                video.play().then(resolve).catch(err => {
+                    console.warn('Video play error:', err);
+                    resolve();
+                });
+            };
+            if (video.readyState >= 1) {
+                video.play().then(resolve).catch(resolve);
+            }
+            setTimeout(resolve, 800);
+        });
 
         // Hide placeholder, show camera controls
         document.getElementById('cameraPlaceholder').style.display = 'none';
         document.getElementById('startCameraBtn').style.display = 'none';
+        const uploadBtn = document.getElementById('uploadPhotoBtn');
+        if (uploadBtn) uploadBtn.style.display = 'none';
         document.getElementById('captureBtn').style.display = 'inline-flex';
         document.getElementById('stickerSelector').style.display = 'block';
 
         showToast('📷', 'Camera đã sẵn sàng! Hãy tạo dáng~');
     } catch (err) {
-        showToast('⚠️', 'Không thể truy cập camera. Vui lòng cho phép quyền truy cập.');
+        showToast('⚠️', 'Không mở được camera. Bạn có thể bấm "Tải Ảnh Có Sẵn" từ máy nhé!');
         console.error('Camera error:', err);
     }
 }
@@ -882,16 +927,21 @@ function capturePhoto() {
     const canvas = document.getElementById('photoCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // Set canvas size to match video (fallback 640x480)
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
 
-    // Draw mirrored video frame
-    ctx.save();
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    ctx.restore();
+    // Lưu ảnh thô un-framed để có thể đổi khung sau khi chụp
+    rawCapturedCanvas = document.createElement('canvas');
+    rawCapturedCanvas.width = canvas.width;
+    rawCapturedCanvas.height = canvas.height;
+    const rawCtx = rawCapturedCanvas.getContext('2d');
+    rawCtx.translate(canvas.width, 0);
+    rawCtx.scale(-1, 1);
+    rawCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Vẽ lên canvas chính
+    ctx.drawImage(rawCapturedCanvas, 0, 0);
 
     // Draw frame overlay
     drawFrameOnCanvas(ctx, canvas.width, canvas.height);
@@ -930,6 +980,84 @@ function capturePhoto() {
     // Mini confetti
     launchConfetti();
     showToast('📸', 'Đã chụp và tự động đính kèm vào lời chúc! 🥰');
+}
+
+function handlePhotoUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+            // Tắt camera stream nếu đang chạy
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+
+            const canvas = document.getElementById('photoCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = 640;
+            canvas.height = 480;
+
+            // Scale và center ảnh tải lên
+            rawCapturedCanvas = document.createElement('canvas');
+            rawCapturedCanvas.width = canvas.width;
+            rawCapturedCanvas.height = canvas.height;
+            const rawCtx = rawCapturedCanvas.getContext('2d');
+
+            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            const x = (canvas.width - img.width * scale) / 2;
+            const y = (canvas.height - img.height * scale) / 2;
+            rawCtx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+            // Vẽ lên canvas chính
+            ctx.drawImage(rawCapturedCanvas, 0, 0);
+
+            // Lồng khung tốt nghiệp
+            drawFrameOnCanvas(ctx, canvas.width, canvas.height);
+
+            // Hiển thị ảnh
+            const capturedImg = document.getElementById('capturedPhoto');
+            const photoDataUrl = canvas.toDataURL('image/png');
+            capturedImg.src = photoDataUrl;
+            capturedImg.style.display = 'block';
+
+            const video = document.getElementById('cameraVideo');
+            if (video) video.style.display = 'none';
+
+            const placeholder = document.getElementById('cameraPlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
+
+            // Đổi các nút bấm
+            document.getElementById('startCameraBtn').style.display = 'none';
+            const uploadBtn = document.getElementById('uploadPhotoBtn');
+            if (uploadBtn) uploadBtn.style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('retakeBtn').style.display = 'inline-flex';
+            document.getElementById('downloadBtn').style.display = 'inline-flex';
+            document.getElementById('stickerSelector').style.display = 'block';
+
+            // Tự động đính kèm vào form xác nhận
+            hasAttachedPhoto = true;
+            const attachedThumb = document.getElementById('attachedThumbImg');
+            const emptyHint = document.getElementById('photoStatusEmpty');
+            const attachedBox = document.getElementById('photoStatusAttached');
+            const submitBtnText = document.getElementById('submitBtnText');
+
+            if (attachedThumb) attachedThumb.src = photoDataUrl;
+            if (emptyHint) emptyHint.style.display = 'none';
+            if (attachedBox) attachedBox.style.display = 'flex';
+            if (submitBtnText) submitBtnText.textContent = '🎉 Gửi Xác Nhận, Lời Chúc & Ảnh';
+
+            launchConfetti();
+            showToast('📸', 'Đã tải ảnh và lồng khung thành công!');
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 function drawFrameOnCanvas(ctx, width, height) {
@@ -1028,11 +1156,30 @@ function roundRect(ctx, x, y, w, h, r) {
 function retakePhoto() {
     const video = document.getElementById('cameraVideo');
     const capturedImg = document.getElementById('capturedPhoto');
+    const placeholder = document.getElementById('cameraPlaceholder');
 
     capturedImg.style.display = 'none';
-    video.style.display = 'block';
+    rawCapturedCanvas = null;
 
-    document.getElementById('captureBtn').style.display = 'inline-flex';
+    // Reset input file để người dùng có thể chọn lại cùng 1 file ảnh nếu muốn
+    const fileInput = document.getElementById('photoFileInput');
+    if (fileInput) fileInput.value = '';
+
+    if (cameraStream && cameraStream.active) {
+        video.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'inline-flex';
+        document.getElementById('startCameraBtn').style.display = 'none';
+    } else {
+        video.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'flex';
+        document.getElementById('startCameraBtn').style.display = 'inline-flex';
+        document.getElementById('captureBtn').style.display = 'none';
+    }
+
+    const uploadBtn = document.getElementById('uploadPhotoBtn');
+    if (uploadBtn) uploadBtn.style.display = 'inline-flex';
+
     document.getElementById('retakeBtn').style.display = 'none';
     document.getElementById('downloadBtn').style.display = 'none';
 
@@ -1076,6 +1223,21 @@ function selectSticker(type) {
     } else {
         const classicEmojis = ['🎓', '⭐', '✨', '🎓'];
         corners.forEach((c, i) => c.textContent = classicEmojis[i]);
+    }
+
+    // Nếu đã chụp ảnh hoặc tải ảnh lên, cập nhật lại khung ngay lập tức
+    if (rawCapturedCanvas) {
+        const canvas = document.getElementById('photoCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(rawCapturedCanvas, 0, 0);
+        drawFrameOnCanvas(ctx, canvas.width, canvas.height);
+
+        const photoDataUrl = canvas.toDataURL('image/png');
+        const capturedImg = document.getElementById('capturedPhoto');
+        if (capturedImg) capturedImg.src = photoDataUrl;
+        const attachedThumb = document.getElementById('attachedThumbImg');
+        if (attachedThumb) attachedThumb.src = photoDataUrl;
     }
 }
 

@@ -2045,6 +2045,19 @@ main:not(.main-hidden) {
     border: 1px solid var(--glass-border);
 }
 
+.upload-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-light);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.upload-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--gold-primary);
+    color: #fff;
+}
+
 .download-btn {
     background: linear-gradient(135deg, #00b894, #00cec9);
     color: white;
