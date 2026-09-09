@@ -8,7 +8,7 @@ const GRADUATE_NAME = 'Vũ Thị Ngọc Quỳnh';
 // Khi dán link Web App Google Sheets vào đây, lời chúc sẽ được lưu trực tuyến
 // và tất cả mọi người mở website đều nhìn thấy lời chúc của nhau!
 // Xem hướng dẫn chi tiết tại HUONG_DAN_DEPLOY_VA_DATABASE.md
-const CLOUD_API_URL = '';
+const CLOUD_API_URL = 'https://script.google.com/macros/s/AKfycbzYYg4EUmCO3RVBr5vFmr5IeYojVlK8eK4PRhntVzDtUK9RWmZ5h0KldcbW_of-KPfeoA/exec';
 
 // ============================================
 // STATE
@@ -495,13 +495,13 @@ function renderWishCards(wishes) {
         const attendText = wish.attendance === 'yes' ? '✅ Sẽ tham dự' : '❌ Không thể tham dự';
 
         // Photo section (if exists)
-        const photoHtml = wish.photo 
+        const photoHtml = wish.photo
             ? `<div class="wish-photo" onclick="openLightbox('${wish.photo}')">
                     <img src="${wish.photo}" alt="Photo Booth" />
                </div>`
             : '';
 
-        const photoBadge = wish.photo 
+        const photoBadge = wish.photo
             ? '<span class="wish-photo-badge">📸 Photo Booth</span>'
             : '';
 
@@ -712,7 +712,7 @@ function shareOn(platform) {
                 title: `Lễ Tốt Nghiệp Thạc Sĩ - ${GRADUATE_NAME}`,
                 text: shareText,
                 url: isLocal ? publicUrl : rawUrl,
-            }).catch(() => {});
+            }).catch(() => { });
             return;
         } else {
             copyLink();
@@ -743,7 +743,7 @@ function shareOn(platform) {
 
 function copyTextToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).catch(() => {});
+        navigator.clipboard.writeText(text).catch(() => { });
     } else {
         const input = document.createElement('textarea');
         input.value = text;
